@@ -21,16 +21,21 @@ ENDCLASS.
 
 
 
-CLASS zcl_security_cc_problem_1 IMPLEMENTATION.
+CLASS ZCL_SECURITY_CC_PROBLEM_1 IMPLEMENTATION.
 
-  METHOD if_oo_adt_classrun~main.
 
+METHOD if_oo_adt_classrun~main.
+
+ TRY.
     "Check that you have data that matches your input
     SELECT * FROM /dmo/flight
       WHERE carrier_id = @carrierId
         AND connection_id = @connectionId
             INTO TABLE @DATA(flights).
     out->write( flights ).
+
+* check if seatsmax is an integer for real
+    cl_abap_dyn_prg=>check_int_value( seatsmax ).
 
     DATA(dynamicUpdate) = |SEATS_MAX = '{ seatsMax }'|.
     UPDATE /dmo/flight
@@ -45,5 +50,9 @@ CLASS zcl_security_cc_problem_1 IMPLEMENTATION.
         INTO TABLE @flights.
     out->write( flights ).
 
-  ENDMETHOD.
+    CATCH cx_abap_not_an_integer INTO DATA(exception).
+      out->write( exception->get_text( ) ).
+  ENDTRY.
+
+ENDMETHOD.
 ENDCLASS.
